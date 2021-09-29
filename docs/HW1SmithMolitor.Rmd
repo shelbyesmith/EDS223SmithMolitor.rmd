@@ -1,0 +1,88 @@
+---
+title: "Untitled"
+author: "Shelby Smith"
+date: "9/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(RColorBrewer)
+library(rgeos)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(sf)
+library(spData)
+library(spDataLarge)
+library(tidyverse)
+library(tmap)
+library(raster)
+library(ncdf4)
+library(here)
+library(marmap)
+library(rgdal)
+library(mapproj)
+```
+
+```{r New Zealand Bathymetry data}
+nz <- getNOAA.bathy(
+  lon1 = 162,
+  lon2 = 180,
+  lat1 = -33,
+  lat2 = -50,
+  resolution = 1
+) 
+
+nz %>% 
+as.raster() %>% 
+  rasterToPoints() %>% 
+  as.data.frame() ->
+  nz_df
+```
+
+```{r fig.height=5.5, fig.width=5}
+# blues <- c("lightsteelblue4", "lightsteelblue3",
+#            "lightsteelblue2", "lightsteelblue1")
+# 
+# greys <- c(grey(0.6), grey(0.93), grey(0.99))
+# 
+# plot(nz, image = TRUE, land = TRUE, lwd = 0.03,
+#      bpal = list(c(0, max(nz), blues),
+#                  c(min(nz), 0, greys)))
+# # Add coastline
+# plot(nz, n = 1, lwd = 0.4, add = TRUE)
+```
+
+```{r}
+# autoplot.bathy(nz, geom=c("tile","contour")) +
+#     scale_fill_gradient2(low="dodgerblue4", mid="gainsboro", high="darkgreen") +
+#     labs(y = "Latitude", x = "Longitude", fill = "Elevation") +
+#     coord_cartesian(expand = 0)+
+#     ggtitle("A marmap map with ggplot2") 
+```
+
+```{r fig.height=7.5, fig.width=7.5, warning=FALSE}
+ggplot() +
+  geom_raster(data = nz_df, aes(x = x, y = y, fill = layer)) +
+  geom_contour(data = nz_df %>% 
+                 filter(layer <= 0), 
+               aes(x = x, y = y, z = layer), color = "grey20", size = .1) +
+  scale_fill_viridis_c(option = "D") +
+  geom_sf(data = world, fill = NA, color = "black", size = .15) +
+  coord_sf(xlim = c(162, 180), ylim = c(-33, -50), expand = c(0, 0)) +
+  labs(fill = "Elevation\n&\nBathymetry",
+       x = "Longitude",
+       y = "Latitude", 
+       title = "New Zealand",
+       subtitle = "Digital elevation (1 arc minute resolution)") +
+  theme_classic()
+```
+
+
+
+
+
+
+
+
