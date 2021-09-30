@@ -84,13 +84,29 @@ plot(nz, n = 1, lwd = 0.4, add = TRUE)
 ```
 
 ### Using the `marmap::autoplot.bathy()` function to plot with ggplot. 
+## Project Requirements: 
+#Do you want to make your map with ggplot2 or with tmap?
+#What projection is appropriate?
+#Do you need a scale bar?
+#Do you need a north arrow?
+#Do you need a graticule?
+#You do need a legend.
+#Does your map need multiple facets?
+#Make a conscious selection of colors / colorramp. Might you want to use color brewer?
+#For choropleth map, how will you set the breakpoints between classes? Do you want to set them manually, with the style argument, or by using classInt?
+#Add a frame around your map.
+#Do you want to use a pre-defined tm_style?
+#Add a map title.
+#Consider adding a background color.
+#Add a brief textual description of the map using tm_credits(). Cite the data source.
+#How are you handling missing / NA data?
 
 ```{r}
 autoplot.bathy(nz, geom=c("tile","contour")) +
     scale_fill_gradient2(low="dodgerblue4", mid="gainsboro", high="darkgreen") +
     labs(y = "Latitude", x = "Longitude", fill = "Elevation") +
     coord_cartesian(expand = 0)+
-    ggtitle("A marmap map with ggplot2")
+    ggtitle("A marmap map of New Zealand with ggplot2")
 ```
 
 ### Convert raster object to dataframe for ggplot.
@@ -130,6 +146,9 @@ ggplot() +
        title = "New Zealand",
        subtitle = "Digital elevation (1 arc minute resolution)") +
   theme_classic()
+
+# this chunk produces the error: Error in st_normalize.sfc(x, c(x_range[1], y_range[1], x_range[2], y_range[2])) : domain must have a positive range
+
 ```
 
 ### Convert from bathy object to RasterLayer Object 
