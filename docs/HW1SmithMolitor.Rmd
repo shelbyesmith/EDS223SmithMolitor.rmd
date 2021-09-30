@@ -1,29 +1,50 @@
 ---
-title: "Untitled"
-author: "Shelby Smith"
+title: "EDS 223 HW # 1"
+author: "Shelby Smith, Cullen Molitor, and Amber Mceldownney"
 date: "9/28/2021"
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
+  prettydoc::html_pretty:
+    theme: architect
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(messgae = FALSE)
 
-library(RColorBrewer)
-library(rgeos)
-library(rnaturalearth)
-library(rnaturalearthdata)
+# Load Libraries
+
 library(sf)
-library(spData)
-library(spDataLarge)
 library(tidyverse)
-library(tmap)
 library(raster)
-library(ncdf4)
 library(here)
 library(marmap)
-library(rgdal)
-library(mapproj)
+library(leaflet)
+
+# So far we only used the above packages
+
+# library(RColorBrewer)
+# library(rgeos)
+# library(rnaturalearth)
+# library(rnaturalearthdata)
+# library(spData)
+# library(spDataLarge)
+# library(tmap)
+# library(ncdf4)
+# library(rgdal)
+# library(mapproj)
 ```
+
+```{css, echo=FALSE}
+/* Move code folding buttons to the left */
+div.col-md-12 .pull-right {
+  float: left !important
+}
+```
+
+### Use `marmap::getNOAA.bathy()` to load in New Zealand bathymetry data directly from NOAA.
 
 ```{r New Zealand Bathymetry data}
 nz <- getNOAA.bathy(
@@ -33,7 +54,48 @@ nz <- getNOAA.bathy(
   lat2 = -50,
   resolution = 1
 ) 
+```
 
+### Use `sf::read_sf()` to read the shapefile containing the New Zealand coastline. 
+
+```{r New Zealand Coastline}
+nz_coast <- sf::read_sf(
+  here(
+    "data",
+    "nz-coastlines-and-islands-polygons",
+    "nz-coastlines-and-islands-polygons-topo-150k.shp"
+    )
+  )
+```
+
+### Base R plot
+
+```{r fig.height=5.5, fig.width=5.5}
+blues <- c("lightsteelblue4", "lightsteelblue3",
+           "lightsteelblue2", "lightsteelblue1")
+
+greys <- c(grey(0.6), grey(0.93), grey(0.99))
+
+plot(nz, image = TRUE, land = TRUE, lwd = 0.03,
+     bpal = list(c(0, max(nz), greys),
+                 c(min(nz), 0, blues)))
+# Add coastline
+plot(nz, n = 1, lwd = 0.4, add = TRUE)
+```
+
+### Using the `marmap::autoplot.bathy()` function to plot with ggplot. 
+
+```{r}
+autoplot.bathy(nz, geom=c("tile","contour")) +
+    scale_fill_gradient2(low="dodgerblue4", mid="gainsboro", high="darkgreen") +
+    labs(y = "Latitude", x = "Longitude", fill = "Elevation") +
+    coord_cartesian(expand = 0)+
+    ggtitle("A marmap map with ggplot2")
+```
+
+### Convert raster object to dataframe for ggplot.
+
+```{r}
 nz %>% 
 as.raster() %>% 
   rasterToPoints() %>% 
@@ -41,49 +103,24 @@ as.raster() %>%
   nz_df
 ```
 
-```{r New Zealand Coastline}
-nz_coast <- sf::read_sf(
-  here(
-    "nz-coastlines-and-islands-polygons",
-    "nz-coastlines-and-islands-polygons-topo-150k.shp"
-    )
-  )
-```
+### Plot New Zealand Coastline with bathymetric and elevation data. 
 
-
-```{r fig.height=5.5, fig.width=5}
-# blues <- c("lightsteelblue4", "lightsteelblue3",
-#            "lightsteelblue2", "lightsteelblue1")
-# 
-# greys <- c(grey(0.6), grey(0.93), grey(0.99))
-# 
-# plot(nz, image = TRUE, land = TRUE, lwd = 0.03,
-#      bpal = list(c(0, max(nz), blues),
-#                  c(min(nz), 0, greys)))
-# # Add coastline
-# plot(nz, n = 1, lwd = 0.4, add = TRUE)
-```
-
-```{r}
-# autoplot.bathy(nz, geom=c("tile","contour")) +
-#     scale_fill_gradient2(low="dodgerblue4", mid="gainsboro", high="darkgreen") +
-#     labs(y = "Latitude", x = "Longitude", fill = "Elevation") +
-#     coord_cartesian(expand = 0)+
-#     ggtitle("A marmap map with ggplot2") 
-```
-
-```{r fig.height=7.5, fig.width=7.5, warning=FALSE}
+```{r fig.height=7.5, fig.width=7.5}
 ggplot() +
   geom_raster(data = nz_df 
-              # %>% # Uncomment to only get bathymetry
+              # ## Uncomment below to only get bathymetry
+              # %>% 
                  # filter(layer <= 0)
               , 
               aes(x = x, y = y, fill = layer)) +
-  # geom_contour(data = nz_df 
-               # %>% # I think it looks better without the contours on land, if any at all
-                 # filter(layer <= 0)
-               # , 
-               # aes(x = x, y = y, z = layer), color = "grey20", size = .1) +
+  # ## I think it looks better without the contours on land, if any at all
+  # ## Uncomment first and last two lines below to get all contours
+  # ## Uncomment all below lines to get only seafloor contours 
+  # geom_contour(data = nz_df
+  #              %>%
+  #                filter(layer <= 0)
+  #              ,
+  #              aes(x = x, y = y, z = layer), color = "grey20", size = .1) +
   scale_fill_viridis_c(option = "A") +
   geom_sf(data = nz_coast, fill = NA, color = "black", size = .15) +
   coord_sf(xlim = c(162, 180), ylim = c(-33, -50), expand = c(0, 0)) +
@@ -95,7 +132,27 @@ ggplot() +
   theme_classic()
 ```
 
+### Convert from bathy object to RasterLayer Object 
 
+```{r}
+nz %>% 
+  as.raster() ->
+  nz_raster 
+```
+
+### Plot Raster onto interactive `leaflet` map
+
+```{r}
+leaflet() %>%
+  addProviderTiles(providers$Esri.OceanBasemap, group = "Ocean Base Map") %>% 
+  addRasterImage(nz_raster, group = "Bathymetry") %>% 
+  addPolygons(data = nz_coast, weight = 1, opacity = 1, fill = FALSE) %>% 
+  addLayersControl(
+    baseGroups = c("Ocean Base Map"),
+    overlayGroups = c("Bathymetry"),
+    options = layersControlOptions(collapsed = FALSE)
+  )
+```
 
 
 
