@@ -186,7 +186,7 @@ nz_big <- getNOAA.bathy(
   as.raster()
 ```
 
-# Plotting low resolution world raster onto interactive `leaflet` map
+### Plotting low resolution world raster onto interactive `leaflet` map
 
 ```{r Leaflet world elevation, fig.height=7.5, fig.width=7.5}
 leaflet() %>%
