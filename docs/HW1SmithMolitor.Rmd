@@ -44,7 +44,7 @@ div.col-md-12 .pull-right {
 }
 ```
 
-### Use `marmap::getNOAA.bathy()` to load in New Zealand bathymetry data directly from NOAA.
+### Use `marmap::getNOAA.bathy()` to load New Zealand bathymetry and elevation data directly from NOAA.
 
 ```{r New Zealand Bathymetry data}
 nz <- getNOAA.bathy(
