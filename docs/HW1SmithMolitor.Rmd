@@ -154,7 +154,32 @@ leaflet() %>%
   )
 ```
 
+### Making lower resolution world map raster
 
+```{r}
+nz_big <- getNOAA.bathy(
+  lon1 = -180,
+  lon2 = 180,
+  lat1 = 90,
+  lat2 = -90,
+  resolution = 7
+) %>% 
+  as.raster()
+```
+
+# Plotting low resolution world raster onto interactive `leaflet` map
+
+```{r Leaflet world elevation, fig.height=7.5, fig.width=7.5}
+leaflet() %>%
+  addProviderTiles(providers$Esri.OceanBasemap, group = "Ocean Base Map") %>% 
+  addRasterImage(nz_big, group = "Bathymetry") %>% 
+  addLayersControl(
+    baseGroups = c("Ocean Base Map"),
+    overlayGroups = c("Bathymetry"),
+    options = layersControlOptions(collapsed = FALSE)
+  ) %>% 
+  setView(lng = 170, lat = -40, zoom = 4)
+```
 
 
 
